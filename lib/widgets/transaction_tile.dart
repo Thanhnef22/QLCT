@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
-import '../data/demo_data.dart';
+
+import '../app/app_theme.dart';
+import '../finance/finance_format.dart';
+import '../finance/finance_models.dart';
+import '../finance/finance_visuals.dart';
 
 class TransactionTile extends StatelessWidget {
   const TransactionTile({required this.transaction, this.onTap, super.key});
 
-  final DemoTransaction transaction;
+  final FinanceTransaction transaction;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final income = transaction.type == 'income';
+    final color = financeColor(transaction.categoryColor);
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: onTap,
@@ -21,29 +27,37 @@ class TransactionTile extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: transaction.color,
+                color: color.withAlpha(30),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(transaction.icon, color: Colors.black54, size: 22),
+              child: Icon(financeIcon(transaction.categoryIcon), color: color),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(transaction.title, style: textTheme.titleMedium),
+                  Text(transaction.categoryName, style: textTheme.titleMedium),
                   const SizedBox(height: 4),
-                  Text('${transaction.category} • ${transaction.date}',
-                      style: textTheme.bodySmall),
+                  Text(
+                    '${transaction.note.isEmpty ? (income ? 'Thu nhập' : 'Chi tiêu') : transaction.note} • ${formatDate(transaction.date)}',
+                    style: textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),
             const SizedBox(width: 12),
             Text(
-              transaction.amount,
+              '${income ? '+' : '-'}${formatVnd(transaction.amount)}',
               textAlign: TextAlign.right,
               style: textTheme.labelLarge?.copyWith(
-                color: transaction.isIncome ? const Color(0xFF07936E) : null,
+                color: income
+                    ? (Theme.of(context).brightness == Brightness.dark
+                          ? Theme.of(context).colorScheme.primary
+                          : AppColors.mintDark)
+                    : AppColors.coral,
               ),
             ),
           ],
